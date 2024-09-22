@@ -1,0 +1,36 @@
+version: '3.9'
+
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
+    tag: "{{.Name}}"
+    
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    volumes:
+      # - $PWD/data:/app/data
+      - /mnt/glusterfs/uptime-kuma/data:/app/data
+    # networks:
+    #   - uptime-kuma
+    ports:
+      - "5002:3001"
+    deploy: 
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.WIRED == YES
+          # - node.labels.GLUSTERFS == YES
+        max_replicas_per_node: 1
+      restart_policy:
+        condition: on-failure
+    logging: *default-logging
+
+
+# networks:
+#   uptime-kuma:
+    # external: true
